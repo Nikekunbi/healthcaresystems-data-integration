@@ -1,0 +1,584 @@
+
+🏥 HEALTHCARE DATA INTEGRATION — TASK 1: IMPORT
+
+============================================================
+Task 1a: Importing Pharmacy_Claims.txt
+============================================================
+✓ Saved to: data/processed/Pharmacy_Claims.xlsx
+  Shape: 100 rows × 9 columns
+
+  Columns: ['ClaimID', 'PatientID', 'Medication', 'Dosage', 'FillDate', 'Payer', 'ClinicID', 'ChargeAmount', 'PaidAmount']
+
+  First 5 rows:
+ClaimID PatientID Medication Dosage   FillDate    Payer ClinicID  ChargeAmount  PaidAmount
+ RX9000     NV094 Amlodipine   20mg 2024-04-06 Medicare      C01        159.20       97.52
+ RX9001     NV027 Amlodipine    5mg 2024-04-22 Medicaid      C02        381.03      325.61
+ RX9002     NV005 Amlodipine   10mg 2024-01-22 Medicaid      C05        296.82      215.41
+ RX9003     NV031 Amlodipine  500mg 2024-08-20  Private      C05        245.48      197.23
+ RX9004     NV008 Lisinopril      ? 2024-04-12 Medicare      C02         75.07       72.29
+
+============================================================
+Task 1b: Importing Lab_Results.txt
+============================================================
+✓ Saved to: data/processed/Lab_Results.xlsx
+  Shape: 201 rows × 9 columns
+
+  Columns: ['PatientID', 'LabTestID', 'CollectionDate', 'TestName', 'TestResultValue', 'Units', 'ReferenceRangeLow', 'ReferenceRangeHigh', 'AbnormalFlag']
+
+  First 5 rows:
+PatientID LabTestID CollectionDate   TestName  TestResultValue Units  ReferenceRangeLow  ReferenceRangeHigh AbnormalFlag
+    NV094    LB0001     2024-12-01      HbA1c             9.22     %                4.0                 6.0         High
+    NV094    LB0002     2024-01-21 Creatinine             1.22 mg/dL                0.6                 1.3       Normal
+    NV094    LB0003     2023-08-11      HbA1c             7.83     %                4.0                 6.0         High
+    NV027    LB0004     2022-06-19      HbA1c             7.24     %                4.0                 6.0         High
+    NV027    LB0005     2024-08-03      HbA1c             4.13     %                4.0                 6.0       Normal
+
+✅ Task 1 Complete! Both files exported to data/processed/
+
+🏥 HEALTHCARE DATA INTEGRATION — TASK 2: ANALYSIS
+
+============================================================
+Task 2.1 — Pharmacy Claims Analysis
+============================================================
+
+2.1a) Paid amounts exceeding $250:
+      → 21 claims
+
+2.1b) Payer totals (sorted Z→A):
+      Private      $ 7,313.09 ← HIGHEST
+      Medicaid     $ 6,180.81
+      Medicare     $ 4,902.17
+
+      → Top payer: Private
+
+2.1c) Total paid by Private (SUMIF):
+      → $7,313.09
+
+============================================================
+Task 2.2 — Lab Results Analysis (LDL Cholesterol)
+============================================================
+
+2.2a) Top LDL Cholesterol result (sorted Z→A):
+      PatientID: NV031  |  Value: 187.1 mg/dL  |  Date: 2022-06-22
+      → Max value: 187.1
+
+2.2b) Average LDL Cholesterol (AVERAGEIF):
+      → 134.64 mg/dL
+
+2.2c) Patients with LDL > 160 mg/dL (COUNTIF):
+PatientID  TestResultValue CollectionDate
+    NV031           187.10     2022-06-22
+    NV008           171.16     2024-10-09
+    NV080           169.57     2024-05-18
+    NV091           169.52     2024-04-16
+    NV049           164.21     2024-05-29
+    NV004           162.83     2024-06-07
+    NV071           162.83     2022-06-19
+    NV039           162.77     2022-10-09
+    NV088           161.73     2022-09-06
+    NV084           161.73     2023-05-09
+    NV024           161.40     2023-11-20
+    NV006           161.40     2024-04-06
+
+      → 12 distinct patients
+
+============================================================
+📊 TASK 2 SUMMARY — ANSWERS
+============================================================
+  2.1a)  Claims with PaidAmount > $250       → 21
+  2.1b)  Payer with highest total paid       → Private
+  2.1c)  Total paid by top payer ($)         → 7313.09
+  2.2a)  Max LDL Cholesterol (mg/dL)         → 187.1
+  2.2b)  Avg LDL Cholesterol (mg/dL)         → 134.64
+  2.2c)  Patients with LDL > 160 mg/dL       → 12
+
+✅ Task 2 Complete!
+
+🏥 HEALTHCARE DATA INTEGRATION — TASK 3: DATA CLEANING
+
+✓ Loaded from local file: data/raw/Patients_EHR_raw_data.csv
+  Shape: 74 rows × 6 columns
+
+  PatientID DateOfBirth  Gender  ZipCode        PrimaryCondition AdmissionDate
+0     NV001  1983-03-11  Female  30933.0   Type 2 Diabetes (E11)    07-06-2024
+1     NV004         NaN    Male  76999.0        Asthma (J45.909)    27-10-2022
+2     NV005  1984-08-25  Female  40307.0  Osteoarthritis (M15.9)    30-10-2024
+3     NV006  1982-12-16  Female  56844.0   Type 2 Diabetes (E11)    05-07-2022
+4     NV007  1990-10-11    Male      NaN  Hyperlipidemia (E78.5)    17-06-2024
+
+
+══════════════════════════════════════════════════
+  PHASE 3.1 — IDENTIFY ISSUES
+══════════════════════════════════════════════════
+──────────────────────────────────────────────────
+3.1a) Missing Values
+──────────────────────────────────────────────────
+PatientID           0
+DateOfBirth         3
+Gender              0
+ZipCode             4
+PrimaryCondition    0
+AdmissionDate       0
+
+  Total missing values: 7
+
+──────────────────────────────────────────────────
+3.1b) Duplicate Rows
+──────────────────────────────────────────────────
+  Number of duplicate rows: 2
+
+  Duplicate records:
+   PatientID DateOfBirth Gender  ZipCode        PrimaryCondition AdmissionDate
+20     NV028  18-05-1978   Male      NaN   Type 2 Diabetes (E11)    27-10-2022
+21     NV028  18-05-1978   Male      NaN   Type 2 Diabetes (E11)    27-10-2022
+43     NV053  1941-04-03   Male  39856.0  Hyperlipidemia (E78.5)    17-06-2024
+44     NV053  1941-04-03   Male  39856.0  Hyperlipidemia (E78.5)    17-06-2024
+
+──────────────────────────────────────────────────
+3.1c) Inconsistent Gender Entries
+──────────────────────────────────────────────────
+Gender
+Female    34
+Male      34
+F          4
+M          1
+male       1
+
+  Non-standard values found: ['M', 'male', 'F']
+
+──────────────────────────────────────────────────
+3.1d) Inconsistent Date Formats in AdmissionDate
+──────────────────────────────────────────────────
+_fmt
+DD-MM-YYYY             72
+Excel Serial Number     2
+
+  Rows with non-standard formats:
+PatientID AdmissionDate                _fmt
+    NV008         45258 Excel Serial Number
+    NV046      45439.00 Excel Serial Number
+
+
+══════════════════════════════════════════════════
+  PHASE 3.2 — FIX ISSUES
+══════════════════════════════════════════════════
+
+──────────────────────────────────────────────────
+3.2a) Fix: Handle Missing Values
+──────────────────────────────────────────────────
+  'DateOfBirth': filled 3 missing with 'Unknown'
+  'ZipCode': filled 4 missing with median (46637.0)
+
+  Missing values after fix: 0
+
+──────────────────────────────────────────────────
+3.2b) Fix: Remove Duplicate Rows
+──────────────────────────────────────────────────
+  Rows before: 74
+  Rows after:  72
+  Removed:     2 duplicate(s)
+
+──────────────────────────────────────────────────
+3.2c) Fix: Standardize Gender Values
+──────────────────────────────────────────────────
+  Before: {'Female': 34, 'Male': 32, 'F': 4, 'M': 1, 'male': 1}
+  After:  {'Female': 38, 'Male': 34}
+
+──────────────────────────────────────────────────
+3.2d) Fix: Standardize AdmissionDate Formats
+──────────────────────────────────────────────────
+Traceback (most recent call last):
+  File "/home/claude/healthcare-data-project/scripts/task3_data_cleaning.py", line 257, in <module>
+    df = fix_dates(df)
+         ^^^^^^^^^^^^^
+  File "/home/claude/healthcare-data-project/scripts/task3_data_cleaning.py", line 212, in fix_dates
+    df["AdmissionDate"] = pd.to_datetime(
+                          ^^^^^^^^^^^^^^^
+TypeError: to_datetime() got an unexpected keyword argument 'infer_datetime_format'
+
+🏥 HEALTHCARE DATA INTEGRATION — TASK 4: SQL ANALYSIS
+
+──────────────────────────────────────────────────
+Building local SQLite database...
+──────────────────────────────────────────────────
+  ✓ patients table:        72 rows
+  ✓ pharmacy_claims table: 100 rows
+  ✓ lab_results table:     201 rows
+  ✓ Database saved to: data/processed/medical_data.db
+
+
+════════════════════════════════════════════════════════════
+  4a) Patients born before 1980
+════════════════════════════════════════════════════════════
+
+SQL:
+
+SELECT PatientID,
+       Gender,
+       DateOfBirth
+FROM   patients
+WHERE  DateOfBirth < '1980-01-01'
+  AND  DateOfBirth != 'Unknown'
+ORDER  BY DateOfBirth;
+
+
+Result — 52 rows:
+PatientID Gender DateOfBirth
+    NV053   Male  1941-04-03
+    NV089 Female  1943-07-18
+    NV014 Female  1943-08-25
+    NV046   Male  1944-06-23
+    NV019 Female  1944-08-03
+    NV010 Female  1944-11-11
+    NV047   Male  1945-03-08
+    NV077 Female  1947-06-28
+    NV058 Female  1948-02-12
+    NV067 Female  1948-08-05
+    NV046   Male  1949-07-07
+    NV046   Male  1949-07-07
+    NV008   Male  1949-07-08
+    NV035 Female  1950-03-02
+    NV085 Female  1950-05-24
+    NV063 Female  1950-12-16
+    NV033 Female  1951-02-03
+    NV070 Female  1951-02-03
+    NV039   Male  1954-04-03
+    NV009 Female  1955-07-11
+    NV022 Female  1957-01-02
+    NV032 Female  1957-10-06
+    NV044   Male  1957-11-20
+    NV049   Male  1958-07-23
+    NV024 Female  1958-08-13
+    NV073   Male  1959-05-21
+    NV074 Female  1959-05-27
+    NV015   Male  1959-11-20
+    NV094 Female  1962-11-05
+    NV062   Male  1963-07-23
+    NV020   Male  1964-01-20
+    NV087   Male  1964-01-20
+    NV038   Male  1965-03-12
+    NV086   Male  1966-03-02
+    NV078   Male  1966-05-07
+    NV091 Female  1968-04-03
+    NV017 Female  1970-07-06
+    NV043   Male  1970-07-08
+    NV051 Female  1971-08-06
+    NV096   Male  1972-01-04
+    NV064   Male  1972-04-17
+    NV025 Female  1972-05-02
+    NV084   Male  1974-04-14
+    NV023   Male  1974-05-18
+    NV034 Female  1974-05-18
+    NV012 Female  1975-01-14
+    NV026 Female  1975-04-09
+    NV031 Female  1976-07-08
+    NV029 Female  1976-08-31
+    NV081   Male  1977-10-22
+    NV050 Female  1978-01-20
+    NV028   Male  1978-05-18
+
+════════════════════════════════════════════════════════════
+  4b) Female patients with Type 2 Diabetes
+════════════════════════════════════════════════════════════
+
+SQL:
+
+SELECT PatientID,
+       Gender,
+       DateOfBirth,
+       PrimaryCondition
+FROM   patients
+WHERE  Gender = 'Female'
+  AND  PrimaryCondition LIKE '%Type 2 Diabetes%'
+ORDER  BY PatientID;
+
+
+Result — 10 rows:
+PatientID Gender DateOfBirth      PrimaryCondition
+    NV001 Female  1983-03-11 Type 2 Diabetes (E11)
+    NV006 Female  1982-12-16 Type 2 Diabetes (E11)
+    NV024 Female  1958-08-13 Type 2 Diabetes (E11)
+    NV025 Female  1972-05-02 Type 2 Diabetes (E11)
+    NV026 Female  1975-04-09 Type 2 Diabetes (E11)
+    NV034 Female  1974-05-18 Type 2 Diabetes (E11)
+    NV051 Female  1971-08-06 Type 2 Diabetes (E11)
+    NV070 Female  1951-02-03 Type 2 Diabetes (E11)
+    NV072 Female  1992-11-01 Type 2 Diabetes (E11)
+    NV074 Female  1959-05-27 Type 2 Diabetes (E11)
+
+════════════════════════════════════════════════════════════
+  4c) All lab tests with patient demographics (JOIN)
+════════════════════════════════════════════════════════════
+
+SQL:
+
+SELECT p.PatientID,
+       p.Gender,
+       p.DateOfBirth,
+       l.TestName,
+       l.TestResultValue,
+       l.Units,
+       l.AbnormalFlag
+FROM   patients      p
+JOIN   lab_results   l ON p.PatientID = l.PatientID
+ORDER  BY p.PatientID, l.TestName;
+
+
+Result — 180 rows:
+PatientID Gender DateOfBirth        TestName  TestResultValue Units AbnormalFlag
+    NV001 Female  1983-03-11      Creatinine             1.15 mg/dL       Normal
+    NV001 Female  1983-03-11           HbA1c             5.19     %       Normal
+    NV001 Female  1983-03-11 LDL Cholesterol           110.22 mg/dL       Normal
+    NV004   Male     Unknown           HbA1c             5.56     %       Normal
+    NV004   Male     Unknown           HbA1c             5.92     %       Normal
+    NV004   Male     Unknown LDL Cholesterol           162.83 mg/dL         High
+    NV005 Female  1984-08-25      Creatinine             0.49 mg/dL          Low
+    NV005 Female  1984-08-25      Creatinine             1.42 mg/dL         High
+    NV005 Female  1984-08-25           HbA1c             4.00     %       Normal
+    NV006 Female  1982-12-16           HbA1c             6.17     %         High
+    NV006 Female  1982-12-16           HbA1c             6.22     %         High
+    NV006 Female  1982-12-16 LDL Cholesterol           161.40 mg/dL         High
+    NV007   Male  1990-10-11           HbA1c             5.34     %       Normal
+    NV007   Male  1990-10-11 LDL Cholesterol           107.01 mg/dL       Normal
+    NV007   Male  1990-10-11 LDL Cholesterol           144.15 mg/dL         High
+    NV008   Male  1949-07-08      Creatinine             1.52 mg/dL         High
+    NV008   Male  1949-07-08           HbA1c             7.37     %         High
+    NV008   Male  1949-07-08 LDL Cholesterol           171.16 mg/dL         High
+    NV009 Female  1955-07-11      Creatinine             0.73 mg/dL       Normal
+    NV009 Female  1955-07-11      Creatinine             1.04 mg/dL       Normal
+    NV009 Female  1955-07-11           HbA1c             4.02     %       Normal
+    NV009 Female  1955-07-11           HbA1c             4.60     %       Normal
+    NV009 Female  1955-07-11 LDL Cholesterol           130.00 mg/dL       Normal
+    NV009 Female  1955-07-11 LDL Cholesterol           132.88 mg/dL         High
+    NV010 Female  1944-11-11           HbA1c             6.23     %         High
+    NV010 Female  1944-11-11           HbA1c             6.33     %         High
+    NV010 Female  1944-11-11 LDL Cholesterol           118.57 mg/dL       Normal
+    NV012 Female  1975-01-14      Creatinine             0.85 mg/dL       Normal
+    NV012 Female  1975-01-14           HbA1c             6.17     %         High
+    NV012 Female  1975-01-14 LDL Cholesterol           130.00 mg/dL       Normal
+    NV014 Female  1943-08-25      Creatinine             0.82 mg/dL       Normal
+    NV014 Female  1943-08-25      Creatinine             1.30 mg/dL       Normal
+    NV014 Female  1943-08-25 LDL Cholesterol           150.14 mg/dL         High
+    NV015   Male  1959-11-20      Creatinine             0.79 mg/dL       Normal
+    NV015   Male  1959-11-20           HbA1c             6.06     %         High
+    NV015   Male  1959-11-20 LDL Cholesterol           131.78 mg/dL         High
+    NV017 Female  1970-07-06      Creatinine             1.40 mg/dL         High
+    NV017 Female  1970-07-06           HbA1c             4.40     %       Normal
+    NV017 Female  1970-07-06 LDL Cholesterol           111.41 mg/dL       Normal
+    NV019 Female  1944-08-03           HbA1c             6.27     %         High
+    NV019 Female  1944-08-03 LDL Cholesterol           110.15 mg/dL       Normal
+    NV019 Female  1944-08-03 LDL Cholesterol           146.40 mg/dL         High
+    NV023   Male  1974-05-18           HbA1c             5.49     %       Normal
+    NV023   Male  1974-05-18           HbA1c             5.55     %       Normal
+    NV023   Male  1974-05-18 LDL Cholesterol           110.05 mg/dL       Normal
+    NV024 Female  1958-08-13      Creatinine             1.23 mg/dL       Normal
+    NV024 Female  1958-08-13           HbA1c             5.85     %       Normal
+    NV024 Female  1958-08-13 LDL Cholesterol           161.40 mg/dL         High
+    NV025 Female  1972-05-02      Creatinine             1.17 mg/dL       Normal
+    NV025 Female  1972-05-02           HbA1c             5.49     %       Normal
+    NV025 Female  1972-05-02           HbA1c             5.65     %       Normal
+    NV025 Female  1972-05-02           HbA1c             5.74     %       Normal
+    NV025 Female  1972-05-02 LDL Cholesterol           106.94 mg/dL       Normal
+    NV025 Female  1972-05-02 LDL Cholesterol           130.82 mg/dL         High
+    NV027   Male  1997-12-28           HbA1c             4.13     %       Normal
+    NV027   Male  1997-12-28           HbA1c             7.24     %         High
+    NV027   Male  1997-12-28 LDL Cholesterol           142.37 mg/dL         High
+    NV029 Female  1976-08-31      Creatinine             1.06 mg/dL       Normal
+    NV029 Female  1976-08-31      Creatinine             1.25 mg/dL       Normal
+    NV029 Female  1976-08-31           HbA1c             4.48     %       Normal
+    NV031 Female  1976-07-08           HbA1c             7.74     %         High
+    NV031 Female  1976-07-08           HbA1c             8.51     %         High
+    NV031 Female  1976-07-08 LDL Cholesterol           187.10 mg/dL         High
+    NV035 Female  1950-03-02      Creatinine             1.01 mg/dL       Normal
+    NV035 Female  1950-03-02           HbA1c             5.65     %       Normal
+    NV035 Female  1950-03-02 LDL Cholesterol           144.17 mg/dL         High
+    NV036   Male  1984-09-09      Creatinine             1.23 mg/dL       Normal
+    NV036   Male  1984-09-09           HbA1c             6.86     %         High
+    NV036   Male  1984-09-09 LDL Cholesterol           127.35 mg/dL       Normal
+    NV038   Male  1965-03-12           HbA1c             4.36     %       Normal
+    NV038   Male  1965-03-12           HbA1c             5.16     %       Normal
+    NV038   Male  1965-03-12 LDL Cholesterol           113.88 mg/dL       Normal
+    NV039   Male  1954-04-03      Creatinine             0.95 mg/dL       Normal
+    NV039   Male  1954-04-03 LDL Cholesterol           130.82 mg/dL         High
+    NV039   Male  1954-04-03 LDL Cholesterol           162.77 mg/dL         High
+    NV043   Male  1970-07-08           HbA1c             4.02     %       Normal
+    NV043   Male  1970-07-08           HbA1c             7.02     %         High
+    NV043   Male  1970-07-08           HbA1c             7.99     %         High
+    NV046   Male  1949-07-07      Creatinine             0.76 mg/dL       Normal
+    NV046   Male  1944-06-23      Creatinine             0.76 mg/dL       Normal
+    NV046   Male  1949-07-07      Creatinine             0.76 mg/dL       Normal
+    NV046   Male  1949-07-07 LDL Cholesterol           110.15 mg/dL       Normal
+    NV046   Male  1949-07-07 LDL Cholesterol           137.98 mg/dL         High
+    NV046   Male  1944-06-23 LDL Cholesterol           110.15 mg/dL       Normal
+    NV046   Male  1944-06-23 LDL Cholesterol           137.98 mg/dL         High
+    NV046   Male  1949-07-07 LDL Cholesterol           110.15 mg/dL       Normal
+    NV046   Male  1949-07-07 LDL Cholesterol           137.98 mg/dL         High
+    NV047   Male  1945-03-08           HbA1c             4.86     %       Normal
+    NV047   Male  1945-03-08           HbA1c             4.89     %       Normal
+    NV047   Male  1945-03-08           HbA1c             5.41     %       Normal
+    NV049   Male  1958-07-23           HbA1c             4.25     %       Normal
+    NV049   Male  1958-07-23           HbA1c             4.81     %       Normal
+    NV049   Male  1958-07-23 LDL Cholesterol           164.21 mg/dL         High
+    NV052 Female  1987-03-13      Creatinine             1.08 mg/dL       Normal
+    NV052 Female  1987-03-13           HbA1c             4.56     %       Normal
+    NV052 Female  1987-03-13 LDL Cholesterol           112.56 mg/dL       Normal
+    NV053   Male  1941-04-03      Creatinine             1.08 mg/dL       Normal
+    NV053   Male  1941-04-03      Creatinine             1.27 mg/dL       Normal
+    NV053   Male  1941-04-03 LDL Cholesterol           129.56 mg/dL       Normal
+    NV054   Male  1992-05-27      Creatinine             0.76 mg/dL       Normal
+    NV054   Male  1992-05-27      Creatinine             0.79 mg/dL       Normal
+    NV054   Male  1992-05-27      Creatinine             1.25 mg/dL       Normal
+    NV054   Male  1992-05-27           HbA1c             5.56     %       Normal
+    NV054   Male  1992-05-27           HbA1c             5.77     %       Normal
+    NV054   Male  1992-05-27           HbA1c             7.37     %         High
+    NV058 Female  1948-02-12      Creatinine             1.17 mg/dL       Normal
+    NV058 Female  1948-02-12           HbA1c             4.92     %       Normal
+    NV058 Female  1948-02-12 LDL Cholesterol           155.85 mg/dL         High
+    NV059 Female     Unknown      Creatinine             0.92 mg/dL       Normal
+    NV059 Female     Unknown      Creatinine             1.06 mg/dL       Normal
+    NV059 Female     Unknown           HbA1c             4.48     %       Normal
+    NV062   Male  1963-07-23      Creatinine             1.25 mg/dL       Normal
+    NV062   Male  1963-07-23           HbA1c             5.32     %       Normal
+    NV062   Male  1963-07-23           HbA1c             5.38     %       Normal
+    NV063 Female  1950-12-16      Creatinine             0.82 mg/dL       Normal
+    NV063 Female  1950-12-16           HbA1c             4.43     %       Normal
+    NV063 Female  1950-12-16 LDL Cholesterol           138.31 mg/dL         High
+    NV065   Male  1984-06-16           HbA1c             4.86     %       Normal
+    NV065   Male  1984-06-16           HbA1c             5.56     %       Normal
+    NV065   Male  1984-06-16 LDL Cholesterol           102.72 mg/dL       Normal
+    NV072 Female  1992-11-01           HbA1c             6.43     %       Normal
+    NV072 Female  1992-11-01           HbA1c             6.46     %       Normal
+    NV072 Female  1992-11-01 LDL Cholesterol           107.66 mg/dL       Normal
+    NV073   Male  1959-05-21      Creatinine             0.73 mg/dL       Normal
+    NV073   Male  1959-05-21      Creatinine             1.00 mg/dL       Normal
+    NV073   Male  1959-05-21           HbA1c             5.92     %       Normal
+    NV076 Female  1983-09-18           HbA1c             4.60     %       Normal
+    NV076 Female  1983-09-18 LDL Cholesterol           132.88 mg/dL         High
+    NV076 Female  1983-09-18 LDL Cholesterol           144.15 mg/dL         High
+    NV077 Female  1947-06-28      Creatinine             1.21 mg/dL       Normal
+    NV077 Female  1947-06-28           HbA1c             5.26     %       Normal
+    NV077 Female  1947-06-28 LDL Cholesterol           127.35 mg/dL       Normal
+    NV079 Female  1984-06-03           HbA1c             4.60     %       Normal
+    NV079 Female  1984-06-03 LDL Cholesterol           127.35 mg/dL       Normal
+    NV079 Female  1984-06-03 LDL Cholesterol           153.22 mg/dL         High
+    NV081   Male  1977-10-22      Creatinine             0.85 mg/dL       Normal
+    NV081   Male  1977-10-22      Creatinine             1.06 mg/dL       Normal
+    NV081   Male  1977-10-22           HbA1c             6.31     %         High
+    NV084   Male  1974-04-14      Creatinine             1.40 mg/dL         High
+    NV084   Male  1974-04-14           HbA1c             4.52     %       Normal
+    NV084   Male  1974-04-14 LDL Cholesterol           161.73 mg/dL         High
+    NV085 Female  1950-05-24      Creatinine             1.01 mg/dL       Normal
+    NV085 Female  1950-05-24      Creatinine             1.03 mg/dL       Normal
+    NV085 Female  1950-05-24           HbA1c             5.81     %       Normal
+    NV085 Female  1950-05-24           HbA1c             6.33     %         High
+    NV085 Female  1950-05-24 LDL Cholesterol           106.94 mg/dL       Normal
+    NV085 Female  1950-05-24 LDL Cholesterol           118.57 mg/dL       Normal
+    NV086   Male  1966-03-02           HbA1c             5.64     %       Normal
+    NV086   Male  1966-03-02           HbA1c             8.12     %         High
+    NV086   Male  1997-11-18           HbA1c             5.64     %       Normal
+    NV086   Male  1997-11-18           HbA1c             8.12     %         High
+    NV086   Male  1966-03-02 LDL Cholesterol           143.61 mg/dL         High
+    NV086   Male  1997-11-18 LDL Cholesterol           143.61 mg/dL         High
+    NV088 Female     Unknown      Creatinine             0.76 mg/dL       Normal
+    NV088 Female     Unknown LDL Cholesterol           110.22 mg/dL       Normal
+    NV088 Female     Unknown LDL Cholesterol           161.73 mg/dL         High
+    NV089 Female  1943-07-18      Creatinine             1.20 mg/dL       Normal
+    NV089 Female  1943-07-18           HbA1c             7.57     %         High
+    NV089 Female  1943-07-18 LDL Cholesterol           144.17 mg/dL         High
+    NV091 Female  1968-04-03      Creatinine             0.73 mg/dL       Normal
+    NV091 Female  1968-04-03 LDL Cholesterol           102.72 mg/dL       Normal
+    NV091 Female  1968-04-03 LDL Cholesterol           111.41 mg/dL       Normal
+    NV091 Female  1968-04-03 LDL Cholesterol           127.50 mg/dL       Normal
+    NV091 Female  1968-04-03 LDL Cholesterol           146.40 mg/dL         High
+    NV091 Female  1968-04-03 LDL Cholesterol           169.52 mg/dL         High
+    NV093 Female  1995-10-18      Creatinine             0.84 mg/dL       Normal
+    NV093 Female  1995-10-18           HbA1c             4.23     %       Normal
+    NV093 Female  1995-10-18 LDL Cholesterol           109.11 mg/dL       Normal
+    NV094 Female  1962-11-05      Creatinine             1.22 mg/dL       Normal
+    NV094 Female  1962-11-05           HbA1c             7.83     %         High
+    NV094 Female  1962-11-05           HbA1c             9.22     %         High
+    NV096   Male  1972-01-04           HbA1c             4.86     %       Normal
+    NV096   Male  1972-01-04           HbA1c             6.33     %         High
+    NV096   Male  1972-01-04 LDL Cholesterol           102.72 mg/dL       Normal
+    NV098   Male  1981-06-13      Creatinine             1.00 mg/dL       Normal
+    NV098   Male  1981-06-13           HbA1c             5.29     %       Normal
+    NV098   Male  1981-06-13           HbA1c             5.85     %       Normal
+    NV098   Male  1981-06-13           HbA1c             5.92     %       Normal
+    NV098   Male  1981-06-13 LDL Cholesterol           124.93 mg/dL       Normal
+    NV098   Male  1981-06-13 LDL Cholesterol           131.78 mg/dL         High
+
+════════════════════════════════════════════════════════════
+  4d) Distinct patients with their payer(s) (JOIN)
+════════════════════════════════════════════════════════════
+
+SQL:
+
+SELECT DISTINCT
+       p.PatientID,
+       p.Gender,
+       p.DateOfBirth,
+       pc.Payer
+FROM   patients        p
+JOIN   pharmacy_claims pc ON p.PatientID = pc.PatientID
+ORDER  BY p.PatientID;
+
+
+Result — 54 rows:
+PatientID Gender DateOfBirth    Payer
+    NV001 Female  1983-03-11 Medicaid
+    NV004   Male     Unknown  Private
+    NV005 Female  1984-08-25 Medicaid
+    NV006 Female  1982-12-16  Private
+    NV007   Male  1990-10-11  Private
+    NV008   Male  1949-07-08 Medicare
+    NV009 Female  1955-07-11 Medicare
+    NV010 Female  1944-11-11 Medicare
+    NV012 Female  1975-01-14 Medicaid
+    NV014 Female  1943-08-25  Private
+    NV015   Male  1959-11-20 Medicare
+    NV017 Female  1970-07-06 Medicare
+    NV019 Female  1944-08-03 Medicare
+    NV023   Male  1974-05-18  Private
+    NV024 Female  1958-08-13 Medicaid
+    NV025 Female  1972-05-02  Private
+    NV027   Male  1997-12-28 Medicaid
+    NV029 Female  1976-08-31 Medicaid
+    NV031 Female  1976-07-08  Private
+    NV035 Female  1950-03-02  Private
+    NV036   Male  1984-09-09 Medicare
+    NV038   Male  1965-03-12 Medicare
+    NV039   Male  1954-04-03  Private
+    NV043   Male  1970-07-08  Private
+    NV046   Male  1949-07-07 Medicaid
+    NV046   Male  1944-06-23 Medicaid
+    NV047   Male  1945-03-08 Medicaid
+    NV049   Male  1958-07-23 Medicare
+    NV052 Female  1987-03-13 Medicare
+    NV053   Male  1941-04-03 Medicare
+    NV054   Male  1992-05-27  Private
+    NV058 Female  1948-02-12  Private
+    NV059 Female     Unknown Medicare
+    NV062   Male  1963-07-23  Private
+    NV063 Female  1950-12-16 Medicare
+    NV065   Male  1984-06-16 Medicaid
+    NV072 Female  1992-11-01  Private
+    NV073   Male  1959-05-21 Medicare
+    NV076 Female  1983-09-18  Private
+    NV077 Female  1947-06-28  Private
+    NV079 Female  1984-06-03  Private
+    NV081   Male  1977-10-22  Private
+    NV084   Male  1974-04-14 Medicare
+    NV085 Female  1950-05-24  Private
+    NV086   Male  1966-03-02  Private
+    NV086   Male  1997-11-18  Private
+    NV088 Female     Unknown Medicare
+    NV089 Female  1943-07-18 Medicare
+    NV091 Female  1968-04-03 Medicaid
+    NV093 Female  1995-10-18 Medicaid
+    NV094 Female  1962-11-05 Medicare
+    NV096   Male  1972-01-04 Medicaid
+    NV098   Male  1981-06-13 Medicaid
+    NV098   Male  1981-06-13  Private
+
+
+✅ Task 4 Complete!
